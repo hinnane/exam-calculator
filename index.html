@@ -1,17 +1,16 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Exam Mark Calculator</title>
+  <title>Are you cooked this semester?</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 400px;
+      max-width: 600px;
       margin: auto;
       padding: 20px;
     }
-    input {
+    input, select {
       margin: 5px 0;
       width: 100%;
       padding: 8px;
@@ -19,52 +18,112 @@
     button {
       padding: 10px;
       width: 100%;
-      margin-top: 10px;
+      margin-top: 15px;
       background-color: #4CAF50;
       color: white;
       border: none;
     }
     .result {
-      margin-top: 15px;
+      margin-top: 20px;
       font-weight: bold;
+    }
+    .assessment-group {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h2>Exam Mark Calculator</h2>
 
-  <label>Assignment Mark (%)</label>
-  <input type="number" id="assignment" placeholder="e.g. 75">
+  <h2>Are you cooked this semester?</h2>
 
-  <label>Assignment Weight (%)</label>
-  <input type="number" id="assignmentWeight" placeholder="e.g. 20">
+  <label for="numAssessments">How many assessments do you have for this subject?</label>
+  <input type="number" id="numAssessments" min="1" placeholder="e.g. 2">
+  <button onclick="generateFields()">Set Up Assessments</button>
 
-  <label>Exam Mark (%)</label>
-  <input type="number" id="exam" placeholder="e.g. 60">
+  <form id="assessmentForm"></form>
 
-  <label>Exam Weight (%)</label>
-  <input type="number" id="examWeight" placeholder="e.g. 80">
-
-  <button onclick="calculate()">Calculate Final Mark</button>
+  <button onclick="calculateFinal()" id="calculateBtn" style="display:none;">Calculate Final Mark</button>
 
   <div class="result" id="result"></div>
 
   <script>
-    function calculate() {
-      const aMark = parseFloat(document.getElementById("assignment").value);
-      const aWeight = parseFloat(document.getElementById("assignmentWeight").value);
-      const eMark = parseFloat(document.getElementById("exam").value);
-      const eWeight = parseFloat(document.getElementById("examWeight").value);
+    function generateFields() {
+      const form = document.getElementById('assessmentForm');
+      form.innerHTML = ''; // Clear previous fields
+      const num = parseInt(document.getElementById('numAssessments').value);
 
-      if (isNaN(aMark) || isNaN(aWeight) || isNaN(eMark) || isNaN(eWeight)) {
-        document.getElementById("result").innerText = "Please enter all values.";
+      if (isNaN(num) || num <= 0) {
+        alert('Please enter a valid number of assessments.');
         return;
       }
 
-      const finalMark = (aMark * aWeight / 100) + (eMark * eWeight / 100);
-      const status = finalMark >= 50 ? "✅ You PASS!" : "❌ You FAIL.";
+      for (let i = 0; i < num; i++) {
+        const group = document.createElement('div');
+        group.className = 'assessment-group';
 
-      document.getElementById("result").innerText = `Final Mark: ${finalMark.toFixed(2)}%. ${status}`;
+        group.innerHTML = `
+          <label>Assessment ${i + 1} Name:</label>
+          <input type="text" name="name${i}" placeholder="e.g. Final Exam" required>
+
+          <label>Mark (%)</label>
+          <input type="number" name="mark${i}" min="0" max="100" required>
+
+          <label>Weight (%)</label>
+          <input type="number" name="weight${i}" min="0" max="100" required>
+
+          <label>Is it compulsory to pass?</label>
+          <select name="compulsory${i}">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+
+          <label>Minimum mark required (if compulsory)</label>
+          <input type="number" name="threshold${i}" min="0" max="100" placeholder="e.g. 40">
+        `;
+        form.appendChild(group);
+      }
+
+      document.getElementById('calculateBtn').style.display = 'block';
+    }
+
+    function calculateFinal() {
+      const num = parseInt(document.getElementById('numAssessments').value);
+      let total = 0;
+      let failedCompulsory = false;
+      let messages = [];
+
+      for (let i = 0; i < num; i++) {
+        const mark = parseFloat(document.querySelector(`[name="mark${i}"]`).value);
+        const weight = parseFloat(document.querySelector(`[name="weight${i}"]`).value);
+        const compulsory = document.querySelector(`[name="compulsory${i}"]`).value;
+        const threshold = parseFloat(document.querySelector(`[name="threshold${i}"]`).value) || 0;
+        const name = document.querySelector(`[name="name${i}"]`).value || `Assessment ${i+1}`;
+
+        if (isNaN(mark) || isNaN(weight)) {
+          document.getElementById('result').innerText = "Please fill in all marks and weights.";
+          return;
+        }
+
+        total += mark * (weight / 100);
+
+        if (compulsory === "yes" && mark < threshold) {
+          failedCompulsory = true;
+          messages.push(`${name} mark is below the required threshold of ${threshold}%`);
+        }
+      }
+
+      const pass = total >= 50 && !failedCompulsory;
+      const finalMsg = `Final Mark: ${total.toFixed(2)}%`;
+
+      document.getElementById('result').innerHTML =
+        finalMsg + "<br>" +
+        (failedCompulsory
+          ? "❌ Failed due to compulsory requirement(s):<br>" + messages.join("<br>")
+          : (total >= 50 ? "✅ You PASS!" : "❌ You FAIL."));
+
     }
   </script>
 </body>
