@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exam Mark Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+    }
+    input {
+      margin: 5px 0;
+      width: 100%;
+      padding: 8px;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+      margin-top: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+    }
+    .result {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Exam Mark Calculator</h2>
+
+  <label>Assignment Mark (%)</label>
+  <input type="number" id="assignment" placeholder="e.g. 75">
+
+  <label>Assignment Weight (%)</label>
+  <input type="number" id="assignmentWeight" placeholder="e.g. 20">
+
+  <label>Exam Mark (%)</label>
+  <input type="number" id="exam" placeholder="e.g. 60">
+
+  <label>Exam Weight (%)</label>
+  <input type="number" id="examWeight" placeholder="e.g. 80">
+
+  <button onclick="calculate()">Calculate Final Mark</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    function calculate() {
+      const aMark = parseFloat(document.getElementById("assignment").value);
+      const aWeight = parseFloat(document.getElementById("assignmentWeight").value);
+      const eMark = parseFloat(document.getElementById("exam").value);
+      const eWeight = parseFloat(document.getElementById("examWeight").value);
+
+      if (isNaN(aMark) || isNaN(aWeight) || isNaN(eMark) || isNaN(eWeight)) {
+        document.getElementById("result").innerText = "Please enter all values.";
+        return;
+      }
+
+      const finalMark = (aMark * aWeight / 100) + (eMark * eWeight / 100);
+      const status = finalMark >= 50 ? "✅ You PASS!" : "❌ You FAIL.";
+
+      document.getElementById("result").innerText = `Final Mark: ${finalMark.toFixed(2)}%. ${status}`;
+    }
+  </script>
+</body>
+</html>
